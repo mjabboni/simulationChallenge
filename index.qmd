@@ -10,7 +10,7 @@ execute:
 
 # 🎲 Simulation Challenge - Starter Template
 
-:::: {.callout-important}
+::: {.callout-important}
 ## 📋 What You Need To Do
 
 - [ ] Fork and create repo `simulationChallenge` in your GitHub
@@ -21,7 +21,7 @@ execute:
 - [ ] Share your site: `https://[your-username].github.io/simulationChallenge/`
 :::
 
-:::: {.callout-warning}
+::: {.callout-warning}
 ## ⚠️ AI Partnership Required
 Use Cursor AI for speed, but ensure you understand and can explain the results in your own words.  Verify cursor's calculations as investment simulation is tricky.
 :::
@@ -76,12 +76,12 @@ investmentDAG.show()
 
 ## Analysis Tasks (Fill These In)
 
-::::: {.callout-note}
+::: {.callout-note}
 ## Grading Scope
 
 - Sections 1–4: required and can earn up to 90% of the grade.
 - Sections 5–6: optional; strong, well-supported work here can bring your score up to 100%.
-::::
+:::
 
 ### 1) Expected Value After 1 Flip
 
