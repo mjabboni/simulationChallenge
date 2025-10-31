@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -71,6 +36,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -183,51 +177,356 @@ Figure&nbsp;1: Generative DAG model for the investment game showing how wealth e
 </div>
 <section id="expected-value-after-1-flip" class="level3">
 <h3 class="anchored" data-anchor-id="expected-value-after-1-flip">1) Expected Value After 1 Flip</h3>
-<p>TODO: Explain whether the expected value of your account balance after one flip is &gt;, =, or &lt; $30,000. What is the gain in expected value as a percentage of your buy-in? Does this simple analysis suggest you should buy-in to the game?</p>
+<p>After one coin flip, the expected value of your account balance is <strong>greater than $30,000</strong>.</p>
+<p>Here’s the calculation: With a fair coin (50% probability each outcome), after one flip you will either: - Win heads: $30,000 × 1.5 = $45,000 (with probability 0.5) - Lose tails: $30,000 × 0.6 = $18,000 (with probability 0.5)</p>
+<p>The expected value is: 0.5 × $45,000 + 0.5 × $18,000 = $31,500</p>
+<p>This represents a gain of $1,500, which is <strong>5% of your $30,000 buy-in</strong>.</p>
+<p>However, this simple expected value analysis alone may not be sufficient to make a buy-in decision. While the positive expected value suggests the game is favorable in the long run, there are several important considerations: - <strong>Volatility</strong>: The outcomes are highly variable (you could lose 40% in a single flip) - <strong>Time horizon</strong>: This analysis only considers one flip, but the game continues annually until age 75 - <strong>Compound effects</strong>: Over many periods, even a positive expected value per flip can lead to substantial losses due to the asymmetric compounding (gains multiply by 1.5, losses multiply by 0.6) - <strong>Risk tolerance</strong>: The 40% loss scenario might be unacceptable depending on your risk tolerance</p>
+<p>The positive expected value after one flip suggests a favorable bet <em>in expectation</em>, but we need to examine the full distribution of outcomes over the entire game duration to make an informed decision.</p>
 <div id="q1-expected-value-py" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: Compute EV after one flip in Python</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - Show calculation and brief explanation</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Initial buy-in: $30,000.00
+Value if heads (×1.5): $45,000.00
+Value if tails (×0.6): $18,000.00
+
+Expected value after one flip: $31,500.00
+Gain in expected value: $1,500.00
+Gain as percentage of buy-in: 5.00%
+
+Comparison: EV 31,500.00 &gt; $30,000.00</code></pre>
+</div>
 </div>
 </section>
 <section id="single-simulation-over-time-narrative-plot" class="level3">
 <h3 class="anchored" data-anchor-id="single-simulation-over-time-narrative-plot">2) Single Simulation Over Time (Narrative + Plot)</h3>
 <p>Briefly narrate and visualize what happens to your account balance over the course of one run. Are you happy with the outcome? Why? or Why not? You can use a time series plot to visualize the changes in your account balance over time.</p>
-<div id="q2-single-sim-py" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: Simulate one path from $30,000 over N periods</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - Make a matplotlib (OO) time-series</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - Set seed for reproducibility</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="cell-q2-single-sim-py" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div id="q2-single-sim-py" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/q2-single-sim-py-output-1.png" width="951" height="566" class="figure-img"></p>
+<figcaption>Single simulation path of account balance over 10 years (ages 65-75)</figcaption>
+</figure>
 </div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+============================================================
+SIMULATION SUMMARY
+============================================================
+Starting age: 25 years
+Ending age: 75 years
+Number of coin flips: 65
+Initial balance: $30,000.00
+Final balance: $39.56
+Net gain/loss: $-29,960.44
+Return percentage: -99.87%
+
+Coin flip sequence (H=Heads, T=Tails):
+THHHTTTHHHTHHTTTTHTTHTTTTHTHHTHTTHHHTTHTTTTHTHTHHT...
+
+Heads count: 29 (44.6%)
+Tails count: 36 (55.4%)
+============================================================
+</code></pre>
+</div>
+</div>
+<p><strong>Narrative:</strong></p>
+<p>This single simulation run demonstrates the volatile nature of the investment game. Starting with a $30,000 buy-in, the account balance fluctuates dramatically over the 50-year period. Each year, a coin flip determines the fate: heads multiplies the balance by 1.5 (50% gain), while tails multiplies it by 0.6 (40% loss).</p>
+<p>The time series plot reveals the asymmetric compounding effect: while gains and losses have equal probability, their magnitudes differ. A sequence of tails creates steep declines that are difficult to recover from, while strings of heads generate exponential growth. The path shown in this simulation illustrates one possible trajectory through the investment landscape.</p>
+<p><strong>Assessment of this outcome:</strong></p>
+<p>Whether I’m “happy” with this particular outcome depends entirely on the final balance achieved. If the simulation results in a final balance above $30,000, there’s a positive nominal return. However, even a positive outcome may be concerning because:</p>
+<ol type="1">
+<li><strong>Extreme volatility</strong>: The journey likely included significant drawdowns and periods where the balance fell well below the initial investment</li>
+<li><strong>Psychological stress</strong>: Large swings could create anxiety and make it difficult to maintain the investment strategy</li>
+<li><strong>Opportunity cost</strong>: The capital was tied up in a highly volatile investment for 50 years with no guarantees</li>
+<li><strong>Inflation</strong>: Even if nominally positive, the real purchasing power may have eroded over 10 years</li>
+</ol>
+<p><strong>Why this matters:</strong></p>
+<p>This single simulation serves as a cautionary tale. While the expected value per flip is positive (5% gain per flip), any single realization can end dramatically differently. The extreme volatility means that luck plays a crucial role, and the path dependency of compounding ensures that early losses are particularly damaging. Before committing $30,000, we need to examine the full distribution of outcomes across many simulations to understand the true risk profile of this investment.</p>
 </section>
 <section id="simulations-distribution-of-final-balances" class="level3">
 <h3 class="anchored" data-anchor-id="simulations-distribution-of-final-balances">3) 100 Simulations: Distribution of Final Balances</h3>
 <p>TODO: Visually and narratively describe the distribution of your account balance after running the 100 simulations. What is the probability of outcomes that you’d be happy with after having invested $30,000?</p>
-<div id="q3-dist-100-py" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: Run 100 simulations and plot histogram of final balances</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - Add vertical line at $30,000</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - Compute mean, median, and P(final &gt; $30,000)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="cell-q3-dist-main-py" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<div id="q3-dist-main-py" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/q3-dist-main-py-output-1.png" width="1527" height="566" class="figure-img"></p>
+<figcaption>Distribution of final balances showing probability of happy outcomes (&gt;$30,000)</figcaption>
+</figure>
 </div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+======================================================================
+DISTRIBUTION SUMMARY: Probability of Happy Outcomes
+======================================================================
+Initial buy-in: $30,000
+Number of simulations: 100
+
+Outcome Classification:
+  Happy outcomes (Balance &gt; $30,000): 32 simulations
+  Unhappy outcomes (Balance ≤ $30,000): 68 simulations
+
+Probability Analysis:
+  P(Happy outcome) = 0.320 (32.0%)
+  P(Unhappy outcome) = 0.680 (68.0%)
+
+Interpretation:
+  After investing $30,000, there is a 32.0% chance
+  of ending with more than your initial investment.
+======================================================================
+</code></pre>
+</div>
+</div>
+<div id="cell-q3-dist-100-py" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\whatf\AppData\Local\Temp\ipykernel_5132\440324954.py:133: MatplotlibDeprecationWarning: The 'labels' parameter of boxplot() has been renamed 'tick_labels' since Matplotlib 3.9; support for the old name will be dropped in 3.11.
+  bp = ax4.boxplot(box_data, vert=True, patch_artist=True, labels=['Final Balances'],
+C:\Users\whatf\AppData\Local\Temp\ipykernel_5132\440324954.py:155: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 1, 0.98])</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div id="q3-dist-100-py" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/q3-dist-100-py-output-2.png" width="1268" height="910" class="figure-img"></p>
+<figcaption>Comprehensive distribution analysis of final balances across 100 simulations</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+======================================================================
+SIMULATION RESULTS: 100 RUNS
+======================================================================
+Initial buy-in: $30,000
+Number of simulations: 100
+Number of years per simulation: 10
+
+Final Balance Statistics:
+  Mean:   $53,156.90
+  Median: $17,714.70
+  Minimum: $1,133.74
+  Maximum: $1,729,951.17
+  Standard Deviation: $175,676.73
+
+Probability of Final Balance &gt; $30,000: 0.320 (32.0%)
+Probability of Final Balance ≤ $30,000: 0.680 (68.0%)
+
+Interpretation:
+  Out of 100 simulations, 32 ended above $30,000
+  Out of 100 simulations, 68 ended at or below $30,000
+======================================================================
+</code></pre>
+</div>
+</div>
+<p><strong>Narrative Description of the Distribution:</strong></p>
+<p>The histogram reveals a highly skewed distribution of final account balances after 100 simulations. This distribution tells a compelling and concerning story about the investment game’s risk profile.</p>
+<p><strong>Distribution Characteristics:</strong></p>
+<p>The distribution is strongly right-skewed with a long tail extending to very high values. Most simulations result in relatively modest final balances, while a small number of “lucky” simulations achieve extraordinary wealth. This asymmetry is visible in the histogram where:</p>
+<ul>
+<li><p><strong>Mean vs.&nbsp;Median</strong>: The mean final balance is substantially higher than the median, indicating the distribution is pulled upward by extreme outliers. While the mean might suggest a favorable average outcome, the median provides a more realistic picture of what a typical investor can expect.</p></li>
+<li><p><strong>Wide Range</strong>: The distribution spans several orders of magnitude, from near-zero balances (complete or near-complete losses) to millions of dollars. This extreme variability reflects the compound nature of the game where sequences of heads or tails create exponentially different outcomes.</p></li>
+<li><p><strong>Majority Below Buy-in</strong>: A critical finding is that a significant portion of simulations end below the initial $30,000 investment. This means that despite the positive expected value per flip (calculated in Section 1), the compound effect over 10 years creates many paths where the final balance is less than the original buy-in.</p></li>
+</ul>
+<p><strong>Probability of “Happy” Outcomes:</strong></p>
+<p>Defining a “happy” outcome as one where the final balance exceeds the initial $30,000 investment, the simulation computes this probability directly (shown in the output above). This probability quantifies the likelihood of achieving at least a nominal positive return on the investment—essentially, the chance that after 50 years of playing the game, you’ll end up with more than your original $30,000 buy-in.</p>
+<p><strong>What This Means for Decision-Making:</strong></p>
+<ol type="1">
+<li><p><strong>Risk of Loss</strong>: The complement of the “happy” outcome probability represents the chance that the final balance is at or below $30,000—a substantial probability that indicates a meaningful risk of losing money or breaking even over 10 years. Even after adjusting for inflation, breaking even represents a real loss of purchasing power over such a long time horizon.</p></li>
+<li><p><strong>Mean is Misleading</strong>: While the mean might suggest a favorable investment, it’s heavily influenced by rare but extreme positive outcomes. The median provides a more realistic expectation for most investors.</p></li>
+<li><p><strong>Gambler’s Ruin Effect</strong>: The asymmetric compounding (50% gain vs.&nbsp;40% loss) creates a mathematical structure where strings of losses are more damaging than equivalent strings of gains are beneficial. This is because 0.6 × 0.6 × 0.6 = 0.216 (losing 78.4% after 3 tails) is much worse than 1.5 × 1.5 × 1.5 = 3.375 (gaining 237.5% after 3 heads) is beneficial, relative to recovering from losses.</p></li>
+<li><p><strong>Path Dependency</strong>: Early losses are particularly devastating because they reduce the base amount that can grow from future wins. This path dependency means that the order of coin flips matters tremendously, not just the final count of heads and tails.</p></li>
+</ol>
+<p><strong>Conclusion:</strong></p>
+<p>The distribution analysis reveals that this investment game, despite having a positive expected value per flip, carries substantial risk of long-term losses due to compound effects over 10 years. The high variance and right-skewed distribution mean that while some investors might achieve exceptional returns, most will experience outcomes ranging from modest gains to significant losses. The probability of “happy” outcomes (final balance &gt; $30,000) must be weighed against the substantial probability of negative or break-even results, especially when considering inflation and opportunity costs over a 50-year horizon.</p>
 </section>
 <section id="probability-balance-30000-at-age-75-original-game" class="level3">
 <h3 class="anchored" data-anchor-id="probability-balance-30000-at-age-75-original-game">4) Probability Balance &gt; $30,000 at Age 75 (Original Game)</h3>
-<p>TODO: Report the probability estimate and interpret its practical meaning.</p>
-<div id="q4-prob-original-py" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: Using the 100 simulations above, estimate P(final &gt; 30000)</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - Print numeric result with 3 decimals</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="cell-q4-prob-original-py" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display">
+<div id="q4-prob-original-py" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/q4-prob-original-py-output-1.png" width="1527" height="593" class="figure-img"></p>
+<figcaption>Probability estimate that final balance exceeds $30,000 after 10 years of the original game</figcaption>
+</figure>
 </div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>======================================================================
+PROBABILITY ESTIMATE: P(Final Balance &gt; $30,000)
+======================================================================
+Number of simulations: 100
+Number of years: 10 (ages 65-75)
+
+Probability estimate: P(Final &gt; $30,000) = 0.320
+As percentage: 32.0%
+
+Number of simulations ending above $30,000: 32
+Number of simulations ending at or below $30,000: 68
+======================================================================
+
+Context Statistics:
+  Mean final balance: $53,156.90
+  Median final balance: $17,714.70
+  Standard deviation: $175,676.73
+</code></pre>
+</div>
+</div>
+<p><strong>Probability Estimate:</strong> Based on 100 simulations of the investment game played annually from age 65 to age 75 (10 years), the probability that the final account balance exceeds the initial $30,000 buy-in is reported above with three decimal precision.</p>
+<p><strong>Practical Interpretation:</strong></p>
+<p>This probability estimate reveals critical insights for the buy-in decision:</p>
+<ol type="1">
+<li><p><strong>Risk Assessment</strong>: The probability estimate quantifies the chance that after 10 years of playing this game, you’ll end up with $30,000 or less—effectively breaking even or losing money. This represents a substantial risk, especially when considering inflation and opportunity costs over a decade-long investment horizon. The complement of this probability (1 minus the reported value) represents the likelihood of an unfavorable outcome that must be carefully considered.</p></li>
+<li><p><strong>Decision Framework</strong>: While a probability above 0.5 (50%) would suggest the game is favorable in terms of ending above the buy-in, any probability below 1.0 means there’s a meaningful chance of a negative or break-even outcome. The specific value reported above provides the exact quantitative measure needed to assess whether this level of risk is acceptable for a $30,000 investment decision.</p></li>
+<li><p><strong>Long-Term Financial Planning</strong>: For someone making a $30,000 investment decision, understanding what proportion of simulated outcomes resulted in balances at or below the initial investment provides crucial context. This isn’t just a theoretical risk—it’s a quantifiable probability based on the game’s mechanics that directly informs financial planning decisions.</p></li>
+<li><p><strong>Volatility vs.&nbsp;Expected Value</strong>: Despite the positive expected value per flip calculated in Section 1 (5% gain per flip), the compound effects over 10 years create scenarios where the final balance falls below the buy-in. This highlights the difference between short-term expected value and long-term compound risk, demonstrating why expected value alone is insufficient for decision-making. The probability estimate above quantifies this compound risk explicitly.</p></li>
+<li><p><strong>Comparison to Alternatives</strong>: In practical terms, the probability of not exceeding your initial investment over 10 years (the complement of the reported probability) is a critical metric for comparison. Traditional investment alternatives (such as diversified portfolios) typically offer different risk-return profiles, and this probability helps quantify the specific risk profile of this investment game, enabling informed comparisons with other investment options.</p></li>
+</ol>
+<p><strong>Conclusion</strong>: The probability estimate provides a quantitative foundation for the buy-in decision. Combined with the distribution analysis from Section 3, this probability enables an informed assessment of whether the potential upside justifies the risk of ending at or below the initial investment. A probability significantly below 1.0 indicates substantial risk that must be weighed against the potential for gains, while considering personal risk tolerance and alternative investment opportunities.</p>
 </section>
-<section id="modified-strategy-bet-exactly-50-each-round" class="level3">
-<h3 class="anchored" data-anchor-id="modified-strategy-bet-exactly-50-each-round">5) Modified Strategy (Bet Exactly 50% Each Round)</h3>
+<section id="modified-strategy-bet-25-each-round" class="level3">
+<h3 class="anchored" data-anchor-id="modified-strategy-bet-25-each-round">5) Modified Strategy (Bet 25% Each Round)</h3>
 <p>Instead of having the full balance at risk with each coin flip, assume only 25% of your balance is gambled each year. Compare this to the original game. Which is riskier? Which has better upside?</p>
-<div id="q5-modified-50pct-py" class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: Implement the modified game</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - Run 100 simulations; plot distribution of final balances</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - Estimate P(final &gt; 30000) and compare to original</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># - visually compare the outcome distributions of the original and modified strategies</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Modified Strategy Mechanics:</strong></p>
+<p>When only 25% of the balance is gambled: - <strong>Heads (win)</strong>: 75% remains safe + 25% gains 50% → Balance = Balance × (0.75 + 0.25 × 1.5) = Balance × 1.125 (12.5% gain) - <strong>Tails (lose)</strong>: 75% remains safe + 25% loses 40% → Balance = Balance × (0.75 + 0.25 × 0.6) = Balance × 0.9 (10% loss)</p>
+<p>This is much more conservative than the original strategy where: - <strong>Heads</strong>: Balance × 1.5 (50% gain) - <strong>Tails</strong>: Balance × 0.6 (40% loss)</p>
+<div id="cell-q5-modified-25pct-py" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\whatf\AppData\Local\Temp\ipykernel_5132\2252183158.py:123: MatplotlibDeprecationWarning: The 'labels' parameter of boxplot() has been renamed 'tick_labels' since Matplotlib 3.9; support for the old name will be dropped in 3.11.
+  bp = ax4.boxplot(box_data, vert=True, patch_artist=True,
+C:\Users\whatf\AppData\Local\Temp\ipykernel_5132\2252183158.py:183: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout(rect=[0, 0, 1, 0.97])</code></pre>
 </div>
+<div class="cell-output cell-output-display">
+<div id="q5-modified-25pct-py" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/q5-modified-25pct-py-output-2.png" width="1427" height="1039" class="figure-img"></p>
+<figcaption>Comparison of original vs modified (25% bet) strategy distributions</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+================================================================================
+STRATEGY COMPARISON: Original (100% bet) vs Modified (25% bet)
+================================================================================
+
+Original Strategy (100% of balance gambled):
+  Mean final balance:   $53,156.90
+  Median final balance: $17,714.70
+  Standard deviation:   $175,676.73
+  Minimum:              $1,133.74
+  Maximum:              $1,729,951.17
+  P(Balance &gt; $30,000):      0.320 (32.0%)
+
+Modified Strategy (25% of balance gambled):
+  Mean final balance:   $33,641.01
+  Median final balance: $31,922.46
+  Standard deviation:   $12,340.44
+  Minimum:              $16,344.30
+  Maximum:              $97,419.63
+  P(Balance &gt; $30,000):      0.660 (66.0%)
+
+================================================================================
+KEY INSIGHTS:
+================================================================================
+Risk Assessment (Lower Std Dev = Less Risky):
+  ✓ Modified strategy is LESS RISKY (std dev: $12,340.44 &lt; $175,676.73)
+
+Upside Potential (Higher Max = Better Upside):
+  ✗ Modified strategy has WORSE UPSIDE (max: $97,419.63 &lt; $1,729,951.17)
+
+Safety (Probability of ending above buy-in):
+  ✓ Modified strategy is SAFER (66.0% &gt; 32.0%)
+
+Average Outcome (Mean balance):
+  ✗ Modified strategy has LOWER MEAN ($33,641.01 &lt; $53,156.90)
+
+Typical Outcome (Median balance):
+  ✓ Modified strategy has HIGHER MEDIAN ($31,922.46 &gt; $17,714.70)
+================================================================================
+</code></pre>
+</div>
+</div>
+<p><strong>Comparison Analysis:</strong></p>
+<p><strong>Which is Riskier?</strong></p>
+<p>The <strong>original strategy (100% bet)</strong> is significantly riskier. This is evident from several metrics:</p>
+<ol type="1">
+<li><p><strong>Standard Deviation</strong>: The original strategy has much higher volatility, with a standard deviation that is dramatically larger than the modified strategy. This means outcomes vary much more widely around the mean.</p></li>
+<li><p><strong>Downside Risk</strong>: The minimum final balance is typically much lower in the original strategy. When you gamble the entire balance, a string of tails can devastate your account balance, pushing it toward near-zero values.</p></li>
+<li><p><strong>Extreme Outcomes</strong>: The original strategy produces both extreme losses and extreme gains, creating a much wider distribution of outcomes. The modified strategy, by protecting 75% of the balance each year, creates more stable, predictable outcomes.</p></li>
+</ol>
+<p><strong>Which has Better Upside?</strong></p>
+<p>The <strong>original strategy (100% bet)</strong> has better upside potential. When you gamble the full balance:</p>
+<ol type="1">
+<li><p><strong>Maximum Values</strong>: The original strategy can achieve much higher maximum balances because the entire balance compounds at 1.5× (50% gain) on each heads flip. In the modified strategy, only 25% of the balance gets the full 50% gain, while 75% remains unchanged, limiting the compounding effect.</p></li>
+<li><p><strong>Exponential Growth</strong>: The original strategy allows for true exponential growth when you get a sequence of heads. For example, after 5 consecutive heads:</p>
+<ul>
+<li>Original: Balance × (1.5)^5 = Balance × 7.59 (759% gain)</li>
+<li>Modified: Balance × (1.125)^5 = Balance × 1.802 (80% gain)</li>
+</ul></li>
+<li><p><strong>Mean vs.&nbsp;Median</strong>: The original strategy’s mean is typically much higher, though this is heavily influenced by rare extreme outcomes. The median (typical outcome) may actually favor the modified strategy.</p></li>
+</ol>
+<p><strong>Trade-off Summary:</strong></p>
+<p>The comparison reveals a classic risk-return trade-off:</p>
+<ul>
+<li><p><strong>Original Strategy (100% bet)</strong>: High risk, high potential reward. Offers the chance for extraordinary gains but also the risk of devastating losses. The distribution is highly skewed with a long right tail but also significant downside.</p></li>
+<li><p><strong>Modified Strategy (25% bet)</strong>: Lower risk, lower but more consistent reward. Offers more predictable outcomes with less volatility, but caps the upside potential. The distribution is tighter and more centered around moderate gains.</p></li>
+</ul>
+<p><strong>Practical Implications:</strong></p>
+<p>For a $30,000 investment decision: - If you can tolerate high volatility and are seeking maximum upside (understanding you might lose most of your investment), the <strong>original strategy</strong> might be acceptable. - If you prefer stability, want to protect most of your capital, and are satisfied with moderate but more reliable returns, the <strong>modified strategy</strong> is the better choice.</p>
+<p>The modified strategy essentially trades some upside potential for downside protection—a conservative approach that reduces both risk and reward.</p>
 </section>
 <section id="briefly-explain-your-findings-from-the-previous-step-in-light-of-a-concept-known-as-the-kelly-criterion" class="level3">
 <h3 class="anchored" data-anchor-id="briefly-explain-your-findings-from-the-previous-step-in-light-of-a-concept-known-as-the-kelly-criterion">6) Briefly Explain Your Findings From The Previous Step in Light of A Concept Known as the “Kelly Criterion”</h3>
-<p>What is the Kelly Criterion and how does it relate to the modified strategy?</p>
+<p>The Kelly Criterion is a mathematical formula that determines the optimal fraction of your bankroll to bet in order to maximize long-term logarithmic growth. Developed by John Kelly in 1956, it provides the theoretically optimal bet size when you have repeated opportunities to gamble with positive expected value.</p>
+<p><strong>The Kelly Formula:</strong></p>
+<p>For a bet where you win with probability <span class="math inline">\(p\)</span> and lose with probability <span class="math inline">\(q = 1-p\)</span>, and where: - A win multiplies your bet by <span class="math inline">\((1 + b)\)</span> (gain of <span class="math inline">\(b\)</span>) - A loss multiplies your bet by <span class="math inline">\((1 - a)\)</span> (loss of <span class="math inline">\(a\)</span>)</p>
+<p>The Kelly fraction <span class="math inline">\(f^*\)</span> that maximizes expected logarithmic growth is:</p>
+<p><span class="math display">\[f^* = \frac{p \times a - q \times b}{a \times b}\]</span></p>
+<p>When wins and losses are symmetric (i.e., <span class="math inline">\(a = b\)</span>), this simplifies to:</p>
+<p><span class="math display">\[f^* = \frac{p - q}{a}\]</span></p>
+<p><strong>Applying Kelly to Our Investment Game:</strong></p>
+<p>In our original game: - Probability of heads (win): <span class="math inline">\(p = 0.5\)</span> - Probability of tails (loss): <span class="math inline">\(q = 0.5\)</span> - Win multiplier: <span class="math inline">\(1.5\)</span> (gain of <span class="math inline">\(b = 0.5\)</span> or 50%) - Loss multiplier: <span class="math inline">\(0.6\)</span> (loss of <span class="math inline">\(a = 0.4\)</span> or 40%)</p>
+<p>Using the general Kelly formula: <span class="math display">\[f^* = \frac{0.5 \times 0.4 - 0.5 \times 0.5}{0.4 \times 0.5} = \frac{0.2 - 0.25}{0.2} = \frac{-0.05}{0.2} = -0.25\]</span></p>
+<p><strong>Critical Finding:</strong> The Kelly fraction is <strong>negative</strong> (<span class="math inline">\(-0.25\)</span> or <span class="math inline">\(-25\%\)</span>).</p>
+<p>This negative Kelly fraction has profound implications:</p>
+<ol type="1">
+<li><p><strong>Mathematical Interpretation</strong>: A negative Kelly fraction means that, despite having a positive expected value per flip (5% gain as calculated in Section 1), betting the full balance actually <strong>reduces</strong> long-term expected logarithmic growth. The asymmetric compounding (50% gain vs.&nbsp;40% loss) creates a situation where the geometric mean growth is negative when you bet 100% of your balance.</p></li>
+<li><p><strong>Why This Happens</strong>: The Kelly Criterion is based on maximizing the <strong>geometric mean</strong> (logarithmic average) of returns, not the arithmetic mean. While the arithmetic mean return per flip is positive, the geometric mean can be negative when betting too aggressively. This occurs because:</p>
+<ul>
+<li>After one flip: Geometric mean = <span class="math inline">\(\sqrt{1.5 \times 0.6} = \sqrt{0.9} = 0.949\)</span> (loss of 5.1%)</li>
+<li>After many flips, betting 100% of your balance leads to expected geometric growth that compounds downward despite positive arithmetic expectation</li>
+</ul></li>
+<li><p><strong>The Optimal Strategy</strong>: The negative Kelly fraction suggests you should bet <strong>less than zero</strong> of your balance—which in practical terms means you should either:</p>
+<ul>
+<li>Not play the game at all, or</li>
+<li>Bet a fraction much smaller than 100%, potentially even taking the “other side” if that were possible</li>
+</ul></li>
+</ol>
+<p><strong>Connection to the Modified Strategy (25% Bet):</strong></p>
+<p>The modified strategy, which bets only 25% of the balance each round, can be analyzed through the Kelly lens:</p>
+<p>When betting fraction <span class="math inline">\(f = 0.25\)</span> (25%): - <strong>Heads (win)</strong>: Balance = Balance × <span class="math inline">\((0.75 + 0.25 × 1.5)\)</span> = Balance × <span class="math inline">\(1.125\)</span> - <strong>Tails (loss)</strong>: Balance = Balance × <span class="math inline">\((0.75 + 0.25 × 0.6)\)</span> = Balance × <span class="math inline">\(0.9\)</span></p>
+<p>The geometric mean per flip becomes: <span class="math display">\[\sqrt{1.125 \times 0.9} = \sqrt{1.0125} = 1.0062\]</span></p>
+<p>This represents a <strong>positive geometric mean growth</strong> of about 0.62% per flip, compared to the negative geometric growth when betting 100%.</p>
+<p><strong>Interpreting Section 5’s Findings Through Kelly:</strong></p>
+<p>The comparison in Section 5 revealed that:</p>
+<ol type="1">
+<li><p><strong>Lower Risk with 25% Bet</strong>: The reduced volatility (lower standard deviation) observed in the modified strategy aligns with Kelly’s insight. By betting less than the full balance, you reduce the negative impact of the asymmetric compounding while still participating in the positive expected value.</p></li>
+<li><p><strong>Better Probability of Positive Outcomes</strong>: The higher probability of ending above the buy-in with the modified strategy reflects the fact that betting 25% creates positive geometric mean growth, whereas betting 100% creates negative geometric mean growth over time.</p></li>
+<li><p><strong>The Upside Trade-off</strong>: While the modified strategy reduces maximum potential gains (because you’re not leveraging the full 50% gain on your entire balance), it preserves capital more effectively. From a Kelly perspective, this preservation is crucial—the criterion prioritizes long-term survival and growth over short-term maximum returns.</p></li>
+</ol>
+<p><strong>Practical Implications:</strong></p>
+<p>The Kelly Criterion provides a mathematical foundation for understanding why the modified strategy performs better despite “sacrificing” upside:</p>
+<ul>
+<li><p><strong>Survival Principle</strong>: Kelly emphasizes that avoiding ruin (preserving capital) is essential for long-term growth. The 25% bet strategy, while not necessarily the exact Kelly-optimal fraction for this game, follows the Kelly principle of preserving capital while still capturing positive expected value.</p></li>
+<li><p><strong>Geometric vs.&nbsp;Arithmetic</strong>: The conflict between positive arithmetic mean (expected value) and negative geometric mean (when betting 100%) explains the counterintuitive result that a game with positive expected value can still be harmful when bet too aggressively.</p></li>
+<li><p><strong>Conservative Betting</strong>: Since the optimal Kelly fraction is negative, any strategy that bets less than 100% (including the 25% modified strategy) moves toward the Kelly-optimal direction, which explains its superior performance characteristics.</p></li>
+</ul>
+<p><strong>Conclusion:</strong></p>
+<p>The Kelly Criterion reveals that the original strategy (betting 100% of balance) is fundamentally flawed from a long-term growth perspective, despite having positive expected value. The modified strategy’s success—evidenced by higher probability of positive outcomes, lower volatility, and better typical (median) results—aligns perfectly with Kelly’s mathematical framework. The 25% bet strategy, while not necessarily the exact Kelly-optimal fraction, demonstrates the principle that conservative betting can outperform aggressive betting even in games with positive expected value when compounding effects create asymmetric risk-return profiles.</p>
 </section>
 </section>
 <section id="professional-presentation-from-grading-tldr" class="level2">
