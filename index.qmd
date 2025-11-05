@@ -41,37 +41,80 @@ You play annually until age 75. Your mission is to analyze outcomes and communic
 
 The following DAFT diagram shows the generative structure of the investment game over time.
 
+
 ```{python}
 #| echo: false
 #| include: false
-import daft
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
-# Create the DAG directly without custom class
-investmentDAG = daft.PGM(dpi=100, alternate_style="outer")
+# Create figure and axis with better sizing
+fig, ax = plt.subplots(figsize=(10, 6))
+# Adjust axis limits to ensure all elements fit with padding
+ax.set_xlim(-2.5, 8.5)
+ax.set_ylim(-0.3, 4.3)
+ax.axis('off')
 
-# Initial wealth (deterministic)
-investmentDAG.add_node("W0", "Initial Wealth\n$W_0 = 30,000$", x=4, y=2.5, aspect=5.4, 
-                      alternate=True, plot_params={'facecolor': 'aliceblue'})
+# Define node positions
+w0_pos = (4, 2.5)
+ct_pos = (0, 1)
+wt_pos = (4, 1)
 
-# Time t nodes  
-investmentDAG.add_node("Ct", "Coin Flip t\n$C_t \\sim \\text{Bernoulli}(0.5)$", x=0, y=1, aspect=4, scale = 1.6,
-                      plot_params={'facecolor': 'aliceblue'})
-investmentDAG.add_node("Wt", "\nWealth t\n$W_t = 1.5 \\times W_{t-1}$ if $C_t = 1$\n$W_t = 0.6 \\times W_{t-1}$ if $C_t = 0$\n", x=4, y=1, scale = 1.6, aspect=4,
-                      alternate=True, plot_params={'facecolor': 'aliceblue'})
+# Draw nodes with ovals (ellipses)
+w0_box = mpatches.Ellipse(w0_pos, 2.4, 0.8,
+                          facecolor='aliceblue', edgecolor='black', linewidth=2)
+ct_box = mpatches.Ellipse(ct_pos, 2.4, 0.8,
+                          facecolor='aliceblue', edgecolor='black', linewidth=2)
+wt_box = mpatches.Ellipse(wt_pos, 2.4, 1.0,
+                          facecolor='aliceblue', edgecolor='black', linewidth=2)
 
-# Add edges showing the relationships
-investmentDAG.add_edge("W0", "Wt")
-investmentDAG.add_edge("Ct", "Wt")
+# Add boxes to plot first
+ax.add_patch(w0_box)
+ax.add_patch(ct_box)
+ax.add_patch(wt_box)
 
-# Add plate around time-dependent nodes
-investmentDAG.add_plate([-2, 0.5, 7.8, 1.0], label="t = 1, ..., N", shift=-0.1)
-```
+# Calculate edge positions for connections (ellipse edges)
+# w0 ellipse: bottom edge at y = center_y - height/2 = 2.5 - 0.4 = 2.1
+# wt ellipse: top edge at y = center_y + height/2 = 1 + 0.5 = 1.5
+w0_bottom = (w0_pos[0], w0_pos[1] - 0.4)
+wt_top = (wt_pos[0], wt_pos[1] + 0.5)
 
-```{python}
-#| label: fig-investment-dag
-#| fig-cap: Generative DAG model for the investment game showing how wealth evolves over time through coin flips
-#| echo: false
-investmentDAG.show()
+# ct ellipse: right edge at x = center_x + width/2 = 0 + 1.2 = 1.2
+# wt ellipse: left edge at x = center_x - width/2 = 4 - 1.2 = 2.8
+ct_right = (ct_pos[0] + 1.2, ct_pos[1])
+wt_left = (wt_pos[0] - 1.2, wt_pos[1])
+
+# Draw edges connecting to box edges (after boxes so arrows render on top)
+ax.annotate('', xy=wt_top, xytext=w0_bottom, 
+            arrowprops=dict(arrowstyle='->', lw=2, color='black'))
+ax.annotate('', xy=wt_left, xytext=ct_right, 
+            arrowprops=dict(arrowstyle='->', lw=2, color='black'))
+
+# Add text labels
+ax.text(w0_pos[0], w0_pos[1], 'Initial Wealth\n$W_0 = 30,000$', 
+        ha='center', va='center', fontsize=11, weight='bold')
+ax.text(ct_pos[0], ct_pos[1], 'Coin Flip t\n$C_t \\sim \\text{Bernoulli}(0.5)$', 
+        ha='center', va='center', fontsize=11, weight='bold')
+ax.text(wt_pos[0], wt_pos[1], 'Wealth t\n$W_t = 1.5 \\times W_{t-1}$ if $C_t = 1$\n$W_t = 0.6 \\times W_{t-1}$ if $C_t = 0$', 
+        ha='center', va='center', fontsize=11, weight='bold')
+
+# Add plate (rectangle around time-dependent nodes)
+plate = mpatches.FancyBboxPatch((-2, 0.5), 7.8, 1.0,
+                                 boxstyle="round,pad=0.2", 
+                                 facecolor='none', edgecolor='black', linewidth=1.5, linestyle='--')
+ax.add_patch(plate)
+# Position text at the bottom below coin flip oval and inside the plate
+# Coin flip oval bottom is at y = 1 - 0.4 = 0.6, plate bottom is at y = 0.5
+# Place text at y = 0.35 (moved 1 line higher from 0.30)
+ax.text(ct_pos[0], 0.35, 't = 1, ..., N', fontsize=10, weight='bold', 
+        ha='center', va='bottom')
+
+# Ensure proper spacing and fit
+plt.tight_layout(pad=1.0)
+
+# Store the figure for later display
+investmentDAG_fig = fig
+
 ```
 
 ## Analysis Tasks (Fill These In)
@@ -147,7 +190,7 @@ np.random.seed(42)
 
 # Simulation parameters
 buy_in = 30000
-num_years = 65  # Assuming starting at age 65, playing until age 75
+num_years = 10  # Playing from age 65 to age 75
 prob_heads = 0.5
 
 # Initialize tracking arrays
@@ -166,7 +209,7 @@ for year in range(1, num_years + 1):
         balance[year] = balance[year - 1] * 0.6
 
 # Create time series plot using matplotlib OO interface
-fig, ax = plt.subplots(figsize=(10, 6))
+fig, ax = plt.subplots(figsize=(8, 5))
 ax.plot(years, balance, linewidth=2, color='#2E86AB', label='Account Balance')
 ax.axhline(y=buy_in, color='#A23B72', linestyle='--', linewidth=1.5, label=f'Initial Buy-in (${buy_in:,})')
 ax.set_xlabel('Year', fontsize=12, fontweight='bold')
@@ -191,7 +234,7 @@ plt.show()
 print(f"\n{'='*60}")
 print("SIMULATION SUMMARY")
 print(f"{'='*60}")
-print(f"Starting age: 25 years")
+print(f"Starting age: 65 years")
 print(f"Ending age: 75 years")
 print(f"Number of coin flips: {num_years}")
 print(f"Initial balance: ${buy_in:,.2f}")
@@ -208,7 +251,7 @@ print(f"{'='*60}\n")
 
 **Narrative:**
 
-This single simulation run demonstrates the volatile nature of the investment game. Starting with a $30,000 buy-in, the account balance fluctuates dramatically over the 50-year period. Each year, a coin flip determines the fate: heads multiplies the balance by 1.5 (50% gain), while tails multiplies it by 0.6 (40% loss).
+This single simulation run demonstrates the volatile nature of the investment game. Starting with a $30,000 buy-in, the account balance fluctuates dramatically over the 10-year period. Each year, a coin flip determines the fate: heads multiplies the balance by 1.5 (50% gain), while tails multiplies it by 0.6 (40% loss).
 
 The time series plot reveals the asymmetric compounding effect: while gains and losses have equal probability, their magnitudes differ. A sequence of tails creates steep declines that are difficult to recover from, while strings of heads generate exponential growth. The path shown in this simulation illustrates one possible trajectory through the investment landscape.
 
@@ -218,7 +261,7 @@ Whether I'm "happy" with this particular outcome depends entirely on the final b
 
 1. **Extreme volatility**: The journey likely included significant drawdowns and periods where the balance fell well below the initial investment
 2. **Psychological stress**: Large swings could create anxiety and make it difficult to maintain the investment strategy
-3. **Opportunity cost**: The capital was tied up in a highly volatile investment for 50 years with no guarantees
+3. **Opportunity cost**: The capital was tied up in a highly volatile investment for 10 years with no guarantees
 4. **Inflation**: Even if nominally positive, the real purchasing power may have eroded over 10 years
 
 **Why this matters:**
@@ -271,63 +314,70 @@ median_balance = np.median(final_balances)
 prob_above_buyin = np.mean(final_balances > buy_in)
 prob_happy = prob_above_buyin  # Probability of being happy (final > $30,000)
 
-# Create focused visualization
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-
-# Left plot: Histogram with clear distinction between happy and unhappy outcomes
-ax1.hist(final_balances[final_balances <= buy_in], bins=30, alpha=0.7, 
-         color='#E63946', label=f'Unhappy Outcomes (≤${buy_in:,})', 
-         edgecolor='black', linewidth=0.8)
-ax1.hist(final_balances[final_balances > buy_in], bins=30, alpha=0.7, 
-         color='#06A77D', label=f'Happy Outcomes (>${buy_in:,})', 
-         edgecolor='black', linewidth=0.8)
-ax1.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=3, 
-            label=f'Buy-in Threshold (${buy_in:,})', zorder=10)
-ax1.set_xlabel('Final Account Balance ($)', fontsize=12, fontweight='bold')
-ax1.set_ylabel('Number of Simulations', fontsize=12, fontweight='bold')
-ax1.set_title('Distribution of Final Balances After 100 Simulations', 
-              fontsize=14, fontweight='bold', pad=15)
-ax1.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax1.legend(loc='upper right', framealpha=0.9, fontsize=10)
-ax1.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-
-# Add probability annotation
+# Create single histogram visualization
 happy_count = np.sum(final_balances > buy_in)
 unhappy_count = np.sum(final_balances <= buy_in)
-ax1.text(0.98, 0.95, 
-         f'Happy Outcomes: {happy_count}/{num_simulations} ({prob_happy*100:.1f}%)\n'
-         f'Unhappy Outcomes: {unhappy_count}/{num_simulations} ({(1-prob_happy)*100:.1f}%)',
-         transform=ax1.transAxes, ha='right', va='top', fontsize=11, fontweight='bold',
-         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9))
 
-# Right plot: Probability visualization (pie chart + bar chart)
-ax2_twin = ax2.twinx()
+# Group outcomes > 100,000 by capping them for display
+group_threshold = 100000
+final_balances_display = np.copy(final_balances)
+values_above_threshold = final_balances > group_threshold
+count_above_threshold = np.sum(values_above_threshold)
+final_balances_display[values_above_threshold] = group_threshold
 
-# Bar chart showing counts
-bars = ax2.bar(['Happy\n(>$30k)', 'Unhappy\n(≤$30k)'], 
-               [happy_count, unhappy_count],
-               color=['#06A77D', '#E63946'], alpha=0.7, edgecolor='black', linewidth=1.5)
-ax2.set_ylabel('Number of Simulations', fontsize=12, fontweight='bold')
-ax2.set_title('Probability of Happy vs Unhappy Outcomes', 
+fig, ax = plt.subplots(figsize=(8, 5))
+
+# Create bins up to 100,000, then add one final bin for grouped values > 100,000
+min_balance = final_balances.min()
+bins_normal = np.linspace(min_balance, group_threshold, 30)
+bins = np.append(bins_normal, group_threshold + (group_threshold - min_balance) / 30)  # Add one more bin for grouped values
+
+# Histogram with clear distinction between happy and unhappy outcomes
+unhappy_values = final_balances_display[final_balances <= buy_in]
+happy_values = final_balances_display[final_balances > buy_in]
+
+ax.hist(unhappy_values, bins=bins, alpha=0.7, 
+         color='#E63946', label=f'Unhappy Outcomes (≤${buy_in:,})', 
+         edgecolor='black', linewidth=0.8)
+ax.hist(happy_values, bins=bins, alpha=0.7, 
+         color='#06A77D', label=f'Happy Outcomes (>${buy_in:,})', 
+         edgecolor='black', linewidth=0.8)
+
+ax.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=3, 
+            label=f'Buy-in Threshold (${buy_in:,})', zorder=10)
+# Add vertical line showing grouping threshold for values > 100,000
+if count_above_threshold > 0:
+    ax.axvline(x=group_threshold, color='#FFD700', linestyle=':', linewidth=2, 
+                alpha=0.7, zorder=5)
+ax.axvline(x=mean_balance, color='#F18F01', linestyle='--', linewidth=2, 
+            label=f'Mean (${mean_balance:,.0f})', zorder=10)
+ax.axvline(x=median_balance, color='#FFB627', linestyle='--', linewidth=2, 
+            label=f'Median (${median_balance:,.0f})', zorder=10)
+ax.set_xlabel('Final Account Balance ($) [Values > $100,000 grouped]', fontsize=12, fontweight='bold')
+ax.set_ylabel('Number of Simulations', fontsize=12, fontweight='bold')
+ax.set_title('Distribution of Final Balances After 100 Simulations', 
               fontsize=14, fontweight='bold', pad=15)
-ax2.set_ylim(0, num_simulations)
+ax.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
+ax.legend(loc='lower right', framealpha=0.9, fontsize=9)
+ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+# Set x-axis limits to include the grouped bin
+ax.set_xlim(left=min_balance, right=group_threshold + (group_threshold - min_balance) / 30)
 
-# Add percentage labels on bars
-for i, (bar, count, prob) in enumerate(zip(bars, [happy_count, unhappy_count], 
-                                           [prob_happy, 1-prob_happy])):
-    height = bar.get_height()
-    ax2.text(bar.get_x() + bar.get_width()/2., height + 1,
-             f'{count}\n({prob*100:.1f}%)',
-             ha='center', va='bottom', fontsize=12, fontweight='bold')
+# Add annotation showing grouped values > 100,000 (after setting axis limits)
+if count_above_threshold > 0:
+    y_max = ax.get_ylim()[1]
+    ax.text(group_threshold, y_max * 0.9, 
+          f'{count_above_threshold} outcomes\n> ${group_threshold:,}\ngrouped here', 
+             ha='center', va='bottom', fontsize=9, 
+             bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.7))
 
-# Probability axis on right
-ax2_twin.set_ylabel('Probability', fontsize=12, fontweight='bold', color='#2E86AB')
-ax2_twin.set_ylim(0, 1)
-ax2_twin.tick_params(axis='y', labelcolor='#2E86AB')
-ax2_twin.axhline(y=prob_happy, color='#06A77D', linestyle='--', linewidth=2, 
-                alpha=0.7, label=f'P(Happy) = {prob_happy:.3f}')
-
-ax2.grid(True, alpha=0.3, linestyle=':', linewidth=0.8, axis='y')
+# Add probability annotation
+ax.text(0.75, 0.85, 
+         f'Happy Outcomes: {happy_count}/{num_simulations} ({prob_happy*100:.1f}%)\n'
+         f'Unhappy Outcomes: {unhappy_count}/{num_simulations} ({(1-prob_happy)*100:.1f}%)\n'
+         f'P(Balance > ${buy_in:,}) = {prob_happy:.3f}',
+         transform=ax.transAxes, ha='center', va='top', fontsize=10, fontweight='bold',
+         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9))
 
 plt.tight_layout()
 plt.show()
@@ -341,6 +391,9 @@ print(f"Number of simulations: {num_simulations}")
 print(f"\nOutcome Classification:")
 print(f"  Happy outcomes (Balance > ${buy_in:,}): {happy_count} simulations")
 print(f"  Unhappy outcomes (Balance ≤ ${buy_in:,}): {unhappy_count} simulations")
+if count_above_threshold > 0:
+    print(f"\nNote: {count_above_threshold} simulation(s) had final balances > ${group_threshold:,}")
+    print(f"      These are grouped at ${group_threshold:,} in the histogram for visualization.")
 print(f"\nProbability Analysis:")
 print(f"  P(Happy outcome) = {prob_happy:.3f} ({prob_happy*100:.1f}%)")
 print(f"  P(Unhappy outcome) = {1-prob_happy:.3f} ({(1-prob_happy)*100:.1f}%)")
@@ -375,7 +428,7 @@ final_balances = np.zeros(num_simulations)
 for sim in range(num_simulations):
     balance = buy_in
     
-    # Simulate coin flips for 50 years
+    # Simulate coin flips for each year
     coin_flips = np.random.binomial(1, prob_heads, num_years)
     
     # Calculate balance over time
@@ -393,14 +446,11 @@ median_balance = np.median(final_balances)
 prob_above_buyin = np.mean(final_balances > buy_in)
 prob_happy = prob_above_buyin  # Probability of being happy (final > $30,000)
 
-# Create comprehensive visualization with subplots
-fig = plt.figure(figsize=(16, 10))
-gs = fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
+# Create single histogram visualization (log scale)
+fig, ax = plt.subplots(figsize=(8, 5))
 
-# 1. Histogram (log scale)
-ax1 = fig.add_subplot(gs[0, 0])
 bins = np.logspace(np.log10(final_balances.min()), np.log10(final_balances.max()), 50)
-n, bins_edges, patches = ax1.hist(final_balances, bins=bins, alpha=0.7, color='#2E86AB', 
+n, bins_edges, patches = ax.hist(final_balances, bins=bins, alpha=0.7, color='#2E86AB', 
                                    edgecolor='black', linewidth=0.5)
 
 # Color bars based on whether they're above or below buy-in
@@ -410,107 +460,26 @@ for i, (patch, left_edge, right_edge) in enumerate(zip(patches, bins_edges[:-1],
     else:
         patch.set_facecolor('#06A77D')  # Green for above buy-in
 
-ax1.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
+ax.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
             label=f'Initial Buy-in (${buy_in:,})', zorder=10)
-ax1.axvline(x=mean_balance, color='#F18F01', linestyle='--', linewidth=2, 
+ax.axvline(x=mean_balance, color='#F18F01', linestyle='--', linewidth=2, 
             label=f'Mean (${mean_balance:,.0f})', zorder=10)
-ax1.axvline(x=median_balance, color='#FFB627', linestyle='--', linewidth=2, 
+ax.axvline(x=median_balance, color='#FFB627', linestyle='--', linewidth=2, 
             label=f'Median (${median_balance:,.0f})', zorder=10)
-ax1.set_xscale('log')
-ax1.set_xlabel('Final Account Balance ($, log scale)', fontsize=11, fontweight='bold')
-ax1.set_ylabel('Frequency', fontsize=11, fontweight='bold')
-ax1.set_title('Distribution of Final Balances (Log Scale)', fontsize=12, fontweight='bold', pad=10)
-ax1.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax1.legend(loc='upper left', framealpha=0.9, fontsize=9)
-ax1.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+ax.set_xscale('log')
+ax.set_xlabel('Final Account Balance ($, log scale)', fontsize=12, fontweight='bold')
+ax.set_ylabel('Frequency', fontsize=12, fontweight='bold')
+ax.set_title('Distribution of Final Balances After 100 Simulations', fontsize=14, fontweight='bold', pad=15)
+ax.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
+ax.legend(loc='upper left', framealpha=0.9, fontsize=9)
+ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
 
 # Add probability annotation
-ax1.text(0.98, 0.98, f'P(Balance > ${buy_in:,}) = {prob_above_buyin:.3f}\n({prob_above_buyin*100:.1f}%)', 
-         transform=ax1.transAxes, ha='right', va='top', fontsize=10, fontweight='bold',
+ax.text(0.98, 0.98, f'P(Balance > ${buy_in:,}) = {prob_above_buyin:.3f}\n({prob_above_buyin*100:.1f}%)', 
+         transform=ax.transAxes, ha='right', va='top', fontsize=10, fontweight='bold',
          bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
 
-# 2. Histogram (linear scale, zoomed in on common range)
-ax2 = fig.add_subplot(gs[0, 1])
-# Focus on balances up to 3x the buy-in for better visibility of typical outcomes
-max_display = min(final_balances.max(), buy_in * 3)
-filtered_balances = final_balances[final_balances <= max_display]
-bins_linear = np.linspace(0, max_display, 40)
-n2, bins_edges2, patches2 = ax2.hist(filtered_balances, bins=bins_linear, alpha=0.7, 
-                                      color='#2E86AB', edgecolor='black', linewidth=0.5)
-
-# Color bars
-for i, (patch, left_edge, right_edge) in enumerate(zip(patches2, bins_edges2[:-1], bins_edges2[1:])):
-    if right_edge <= buy_in:
-        patch.set_facecolor('#E63946')
-    else:
-        patch.set_facecolor('#06A77D')
-
-ax2.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
-            label=f'Initial Buy-in (${buy_in:,})', zorder=10)
-ax2.axvline(x=mean_balance if mean_balance <= max_display else None, color='#F18F01', 
-            linestyle='--', linewidth=2, label=f'Mean (${mean_balance:,.0f})', zorder=10)
-ax2.axvline(x=median_balance if median_balance <= max_display else None, color='#FFB627', 
-            linestyle='--', linewidth=2, label=f'Median (${median_balance:,.0f})', zorder=10)
-ax2.set_xlabel('Final Account Balance ($)', fontsize=11, fontweight='bold')
-ax2.set_ylabel('Frequency', fontsize=11, fontweight='bold')
-ax2.set_title(f'Distribution of Final Balances (Linear Scale, up to ${max_display:,.0f})', 
-              fontsize=12, fontweight='bold', pad=10)
-ax2.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax2.legend(loc='upper right', framealpha=0.9, fontsize=9)
-ax2.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-
-# 3. Cumulative Distribution Function
-ax3 = fig.add_subplot(gs[1, 0])
-sorted_balances = np.sort(final_balances)
-cumulative_prob = np.arange(1, len(sorted_balances) + 1) / len(sorted_balances)
-ax3.plot(sorted_balances, cumulative_prob, linewidth=2.5, color='#2E86AB', label='CDF')
-ax3.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
-            label=f'Initial Buy-in (${buy_in:,})', zorder=10)
-ax3.axhline(y=prob_above_buyin, color='#06A77D', linestyle='--', linewidth=1.5, 
-            alpha=0.7, label=f'P(Balance > ${buy_in:,}) = {prob_above_buyin:.3f}', zorder=9)
-
-# Fill area showing "happy" outcomes
-mask_above = sorted_balances >= buy_in
-ax3.fill_between(sorted_balances[mask_above], 0, cumulative_prob[mask_above], 
-                 alpha=0.3, color='#06A77D', label='"Happy" Outcomes (> $30k)')
-ax3.fill_between(sorted_balances[~mask_above], 0, cumulative_prob[~mask_above], 
-                 alpha=0.3, color='#E63946', label='Outcomes (≤ $30k)')
-
-ax3.set_xscale('log')
-ax3.set_xlabel('Final Account Balance ($, log scale)', fontsize=11, fontweight='bold')
-ax3.set_ylabel('Cumulative Probability', fontsize=11, fontweight='bold')
-ax3.set_title('Cumulative Distribution Function', fontsize=12, fontweight='bold', pad=10)
-ax3.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax3.legend(loc='lower right', framealpha=0.9, fontsize=9)
-ax3.set_ylim(0, 1)
-ax3.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-
-# 4. Box plot
-ax4 = fig.add_subplot(gs[1, 1])
-box_data = [final_balances]
-bp = ax4.boxplot(box_data, vert=True, patch_artist=True, labels=['Final Balances'],
-                 widths=0.6, showmeans=True)
-bp['boxes'][0].set_facecolor('#2E86AB')
-bp['boxes'][0].set_alpha(0.7)
-for element in ['whiskers', 'fliers', 'means', 'medians', 'caps']:
-    if element in bp:
-        for item in bp[element]:
-            item.set_color('#2E86AB')
-            if element == 'medians':
-                item.set_linewidth(2)
-ax4.axhline(y=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
-            label=f'Initial Buy-in (${buy_in:,})', zorder=10)
-ax4.set_yscale('log')
-ax4.set_ylabel('Final Account Balance ($, log scale)', fontsize=11, fontweight='bold')
-ax4.set_title('Box Plot Summary', fontsize=12, fontweight='bold', pad=10)
-ax4.grid(True, alpha=0.3, linestyle=':', linewidth=0.8, axis='y')
-ax4.legend(loc='upper left', framealpha=0.9, fontsize=9)
-ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-ax4.set_xticklabels(['Final\nBalances'])
-
-plt.suptitle('Distribution Analysis: Final Account Balances After 100 Simulations', 
-             fontsize=16, fontweight='bold', y=0.995)
-plt.tight_layout(rect=[0, 0, 1, 0.98])
+plt.tight_layout()
 plt.show()
 
 # Print summary statistics
@@ -551,7 +520,7 @@ The distribution is strongly right-skewed with a long tail extending to very hig
 
 **Probability of "Happy" Outcomes:**
 
-Defining a "happy" outcome as one where the final balance exceeds the initial $30,000 investment, the simulation computes this probability directly (shown in the output above). This probability quantifies the likelihood of achieving at least a nominal positive return on the investment—essentially, the chance that after 50 years of playing the game, you'll end up with more than your original $30,000 buy-in.
+Defining a "happy" outcome as one where the final balance exceeds the initial $30,000 investment, the simulation computes this probability directly (shown in the output above). This probability quantifies the likelihood of achieving at least a nominal positive return on the investment—essentially, the chance that after 10 years of playing the game (from age 65 to 75), you'll end up with more than your original $30,000 buy-in.
 
 **What This Means for Decision-Making:**
 
@@ -565,7 +534,7 @@ Defining a "happy" outcome as one where the final balance exceeds the initial $3
 
 **Conclusion:**
 
-The distribution analysis reveals that this investment game, despite having a positive expected value per flip, carries substantial risk of long-term losses due to compound effects over 10 years. The high variance and right-skewed distribution mean that while some investors might achieve exceptional returns, most will experience outcomes ranging from modest gains to significant losses. The probability of "happy" outcomes (final balance > $30,000) must be weighed against the substantial probability of negative or break-even results, especially when considering inflation and opportunity costs over a 50-year horizon.
+The distribution analysis reveals that this investment game, despite having a positive expected value per flip, carries substantial risk of long-term losses due to compound effects over 10 years. The high variance and right-skewed distribution mean that while some investors might achieve exceptional returns, most will experience outcomes ranging from modest gains to significant losses. The probability of "happy" outcomes (final balance > $30,000) must be weighed against the substantial probability of negative or break-even results, especially when considering inflation and opportunity costs over the 10-year horizon.
 
 ### 4) Probability Balance > $30,000 at Age 75 (Original Game)
 
@@ -613,66 +582,35 @@ prob_below_buyin = 1 - prob_above_buyin
 count_above = np.sum(final_balances > buy_in)
 count_below = np.sum(final_balances <= buy_in)
 
-# Create visualization
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-
-# Left plot: Bar chart showing probability
+# Create single bar chart visualization
 categories = ['Balance > $30,000', 'Balance ≤ $30,000']
 counts = [count_above, count_below]
 probabilities = [prob_above_buyin, prob_below_buyin]
 colors = ['#06A77D', '#E63946']
 
-bars = ax1.bar(categories, counts, color=colors, alpha=0.7, edgecolor='black', linewidth=1.5, width=0.6)
-ax1.set_ylabel('Number of Simulations', fontsize=12, fontweight='bold')
-ax1.set_title('Outcome Counts from 100 Simulations', fontsize=13, fontweight='bold', pad=15)
-ax1.grid(True, alpha=0.3, linestyle=':', linewidth=0.8, axis='y')
-ax1.set_ylim(0, num_simulations)
+fig, ax = plt.subplots(figsize=(8, 5))
+
+bars = ax.bar(categories, counts, color=colors, alpha=0.7, edgecolor='black', linewidth=1.5, width=0.6)
+ax.set_ylabel('Number of Simulations', fontsize=12, fontweight='bold')
+ax.set_title('Probability That Final Balance > $30,000 at Age 75 (Original Game)', 
+             fontsize=14, fontweight='bold', pad=15)
+ax.grid(True, alpha=0.3, linestyle=':', linewidth=0.8, axis='y')
+ax.set_ylim(0, num_simulations)
 
 # Add count labels on bars
 for bar, count, prob in zip(bars, counts, probabilities):
     height = bar.get_height()
-    ax1.text(bar.get_x() + bar.get_width()/2., height + 1,
+    ax.text(bar.get_x() + bar.get_width()/2., height + 1,
              f'{count}\n({prob*100:.1f}%)',
              ha='center', va='bottom', fontsize=12, fontweight='bold')
 
 # Add probability annotation
-ax1.text(0.5, 0.95, 
+ax.text(0.5, 0.95, 
          f'P(Balance > $30,000) = {prob_above_buyin:.3f}',
-         transform=ax1.transAxes, ha='center', va='top', 
+         transform=ax.transAxes, ha='center', va='top', 
          fontsize=14, fontweight='bold',
          bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9, edgecolor='black', linewidth=2))
 
-# Right plot: Probability visualization with stacked horizontal bar
-# Probability bars
-prob_bars = ax2.barh(['Probability'], [prob_above_buyin], left=[0], 
-                     height=0.6, color=colors[0], alpha=0.7, 
-                     edgecolor='black', linewidth=1.5, label=f'P(> $30k) = {prob_above_buyin:.3f}')
-prob_bars2 = ax2.barh(['Probability'], [prob_below_buyin], left=[prob_above_buyin], 
-                      height=0.6, color=colors[1], alpha=0.7, 
-                      edgecolor='black', linewidth=1.5, label=f'P(≤ $30k) = {prob_below_buyin:.3f}')
-
-ax2.set_xlim(0, 1)
-ax2.set_xlabel('Probability', fontsize=12, fontweight='bold')
-ax2.set_title('Probability Distribution', fontsize=13, fontweight='bold', pad=15)
-ax2.set_yticks([])
-
-# Add probability text annotations
-ax2.text(prob_above_buyin/2, 0, f'{prob_above_buyin:.3f}\n({prob_above_buyin*100:.1f}%)',
-         ha='center', va='center', fontsize=13, fontweight='bold', color='white')
-ax2.text(prob_above_buyin + prob_below_buyin/2, 0, f'{prob_below_buyin:.3f}\n({prob_below_buyin*100:.1f}%)',
-         ha='center', va='center', fontsize=13, fontweight='bold', color='white')
-
-# Add vertical line at 50% for reference
-ax2.axvline(x=0.5, color='#A23B72', linestyle='--', linewidth=2, 
-            alpha=0.7, label='50% Reference', zorder=5)
-ax2.text(0.5, 0.3, '50%', ha='center', va='bottom', 
-         fontsize=10, color='#A23B72', fontweight='bold')
-
-ax2.grid(True, alpha=0.3, linestyle=':', linewidth=0.8, axis='x')
-ax2.legend(loc='upper right', framealpha=0.9, fontsize=10)
-
-plt.suptitle('Probability That Final Balance > $30,000 at Age 75 (Original Game)', 
-             fontsize=15, fontweight='bold', y=1.02)
 plt.tight_layout()
 plt.show()
 
@@ -788,135 +726,33 @@ median_modified = np.median(final_balances_modified)
 std_modified = np.std(final_balances_modified)
 prob_above_modified = np.mean(final_balances_modified > buy_in)
 
-# Create comprehensive comparison visualization
-fig = plt.figure(figsize=(18, 12))
-gs = fig.add_gridspec(3, 2, hspace=0.35, wspace=0.3)
+# Create single comparison histogram visualization
+fig, ax = plt.subplots(figsize=(8, 5))
 
-# 1. Side-by-side histograms (log scale)
-ax1 = fig.add_subplot(gs[0, 0])
 bins_log = np.logspace(2, 8, 50)
-ax1.hist(final_balances_original, bins=bins_log, alpha=0.6, color='#E63946', 
+ax.hist(final_balances_original, bins=bins_log, alpha=0.6, color='#E63946', 
          edgecolor='black', linewidth=0.5, label='Original (100% bet)')
-ax1.hist(final_balances_modified, bins=bins_log, alpha=0.6, color='#06A77D', 
+ax.hist(final_balances_modified, bins=bins_log, alpha=0.6, color='#06A77D', 
          edgecolor='black', linewidth=0.5, label='Modified (25% bet)')
-ax1.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
+ax.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
             label=f'Buy-in (${buy_in:,})', zorder=10)
-ax1.set_xscale('log')
-ax1.set_xlabel('Final Account Balance ($, log scale)', fontsize=11, fontweight='bold')
-ax1.set_ylabel('Frequency', fontsize=11, fontweight='bold')
-ax1.set_title('Distribution Comparison: Log Scale', fontsize=12, fontweight='bold', pad=10)
-ax1.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax1.legend(loc='upper left', framealpha=0.9, fontsize=9)
-ax1.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+ax.set_xscale('log')
+ax.set_xlabel('Final Account Balance ($, log scale)', fontsize=12, fontweight='bold')
+ax.set_ylabel('Frequency', fontsize=12, fontweight='bold')
+ax.set_title('Strategy Comparison: Original (100% bet) vs Modified (25% bet)', 
+             fontsize=14, fontweight='bold', pad=15)
+ax.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
+ax.legend(loc='upper left', framealpha=0.9, fontsize=9)
+ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
 
-# 2. Side-by-side histograms (linear scale, focused range)
-ax2 = fig.add_subplot(gs[0, 1])
-max_display = min(final_balances_original.max(), final_balances_modified.max(), buy_in * 5)
-bins_linear = np.linspace(0, max_display, 40)
-ax2.hist(final_balances_original, bins=bins_linear, alpha=0.6, color='#E63946', 
-         edgecolor='black', linewidth=0.5, label='Original (100% bet)')
-ax2.hist(final_balances_modified, bins=bins_linear, alpha=0.6, color='#06A77D', 
-         edgecolor='black', linewidth=0.5, label='Modified (25% bet)')
-ax2.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
-            label=f'Buy-in (${buy_in:,})', zorder=10)
-ax2.set_xlabel('Final Account Balance ($)', fontsize=11, fontweight='bold')
-ax2.set_ylabel('Frequency', fontsize=11, fontweight='bold')
-ax2.set_title(f'Distribution Comparison: Linear Scale (up to ${max_display:,.0f})', 
-              fontsize=12, fontweight='bold', pad=10)
-ax2.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax2.legend(loc='upper right', framealpha=0.9, fontsize=9)
-ax2.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+# Add probability annotations
+ax.text(0.98, 0.98, 
+         f'Original P(> ${buy_in:,}) = {prob_above_original:.3f}\n'
+         f'Modified P(> ${buy_in:,}) = {prob_above_modified:.3f}',
+         transform=ax.transAxes, ha='right', va='top', fontsize=10, fontweight='bold',
+         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9))
 
-# 3. Cumulative Distribution Functions comparison
-ax3 = fig.add_subplot(gs[1, 0])
-sorted_original = np.sort(final_balances_original)
-sorted_modified = np.sort(final_balances_modified)
-cumulative_original = np.arange(1, len(sorted_original) + 1) / len(sorted_original)
-cumulative_modified = np.arange(1, len(sorted_modified) + 1) / len(sorted_modified)
-
-ax3.plot(sorted_original, cumulative_original, linewidth=2.5, color='#E63946', 
-        label='Original (100% bet)', alpha=0.8)
-ax3.plot(sorted_modified, cumulative_modified, linewidth=2.5, color='#06A77D', 
-        label='Modified (25% bet)', alpha=0.8)
-ax3.axvline(x=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
-            label=f'Buy-in (${buy_in:,})', zorder=10)
-ax3.axhline(y=prob_above_original, color='#E63946', linestyle=':', linewidth=1.5, 
-            alpha=0.7, label=f'P(Original > ${buy_in:,}) = {prob_above_original:.3f}')
-ax3.axhline(y=prob_above_modified, color='#06A77D', linestyle=':', linewidth=1.5, 
-            alpha=0.7, label=f'P(Modified > ${buy_in:,}) = {prob_above_modified:.3f}')
-ax3.set_xscale('log')
-ax3.set_xlabel('Final Account Balance ($, log scale)', fontsize=11, fontweight='bold')
-ax3.set_ylabel('Cumulative Probability', fontsize=11, fontweight='bold')
-ax3.set_title('Cumulative Distribution Function Comparison', fontsize=12, fontweight='bold', pad=10)
-ax3.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
-ax3.legend(loc='lower right', framealpha=0.9, fontsize=8)
-ax3.set_ylim(0, 1)
-ax3.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-
-# 4. Box plots comparison
-ax4 = fig.add_subplot(gs[1, 1])
-box_data = [final_balances_original, final_balances_modified]
-bp = ax4.boxplot(box_data, vert=True, patch_artist=True, 
-                 labels=['Original\n(100% bet)', 'Modified\n(25% bet)'],
-                 widths=0.6, showmeans=True)
-bp['boxes'][0].set_facecolor('#E63946')
-bp['boxes'][0].set_alpha(0.7)
-bp['boxes'][1].set_facecolor('#06A77D')
-bp['boxes'][1].set_alpha(0.7)
-for element in ['whiskers', 'fliers', 'means', 'medians', 'caps']:
-    if element in bp:
-        for i, item in enumerate(bp[element]):
-            item.set_color('#E63946' if i % 2 == 0 else '#06A77D')
-            if element == 'medians':
-                item.set_linewidth(2)
-ax4.axhline(y=buy_in, color='#A23B72', linestyle='--', linewidth=2.5, 
-            label=f'Buy-in (${buy_in:,})', zorder=10)
-ax4.set_yscale('log')
-ax4.set_ylabel('Final Account Balance ($, log scale)', fontsize=11, fontweight='bold')
-ax4.set_title('Box Plot Comparison', fontsize=12, fontweight='bold', pad=10)
-ax4.grid(True, alpha=0.3, linestyle=':', linewidth=0.8, axis='y')
-ax4.legend(loc='upper left', framealpha=0.9, fontsize=9)
-ax4.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-
-# 5. Summary statistics comparison table
-ax5 = fig.add_subplot(gs[2, :])
-ax5.axis('off')
-stats_data = [
-    ['Statistic', 'Original (100% bet)', 'Modified (25% bet)', 'Difference'],
-    ['Mean', f'${mean_original:,.2f}', f'${mean_modified:,.2f}', 
-     f'${mean_original - mean_modified:,.2f}'],
-    ['Median', f'${median_original:,.2f}', f'${median_modified:,.2f}', 
-     f'${median_original - median_modified:,.2f}'],
-    ['Std Dev', f'${std_original:,.2f}', f'${std_modified:,.2f}', 
-     f'${std_original - std_modified:,.2f}'],
-    ['Min', f'${final_balances_original.min():,.2f}', f'${final_balances_modified.min():,.2f}', 
-     f'${final_balances_original.min() - final_balances_modified.min():,.2f}'],
-    ['Max', f'${final_balances_original.max():,.2f}', f'${final_balances_modified.max():,.2f}', 
-     f'${final_balances_original.max() - final_balances_modified.max():,.2f}'],
-    ['P(Balance > $30k)', f'{prob_above_original:.3f} ({prob_above_original*100:.1f}%)', 
-     f'{prob_above_modified:.3f} ({prob_above_modified*100:.1f}%)', 
-     f'{prob_above_original - prob_above_modified:.3f}'],
-]
-table = ax5.table(cellText=stats_data[1:], colLabels=stats_data[0], 
-                  cellLoc='center', loc='center',
-                  colWidths=[0.25, 0.25, 0.25, 0.25])
-table.auto_set_font_size(False)
-table.set_fontsize(10)
-table.scale(1, 2)
-# Style header row
-for i in range(4):
-    table[(0, i)].set_facecolor('#2E86AB')
-    table[(0, i)].set_text_props(weight='bold', color='white')
-# Style alternating rows
-for i in range(1, len(stats_data)):
-    for j in range(4):
-        if i % 2 == 0:
-            table[(i, j)].set_facecolor('#F0F0F0')
-ax5.set_title('Statistical Comparison Summary', fontsize=13, fontweight='bold', pad=20)
-
-plt.suptitle('Strategy Comparison: Original (100% bet) vs Modified (25% bet)', 
-             fontsize=16, fontweight='bold', y=0.995)
-plt.tight_layout(rect=[0, 0, 1, 0.97])
+plt.tight_layout()
 plt.show()
 
 # Print detailed comparison
